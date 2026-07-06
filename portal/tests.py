@@ -161,6 +161,7 @@ class AssignmentPortalTests(TestCase):
             'first_name': 'New',
             'last_name': 'Faculty',
             'branch': 'Computer Science and Engineering',
+            'subjects': [self.subject.id],
             'password': 'testpassword123',
             'confirm_password': 'testpassword123'
         })

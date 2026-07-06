@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import StudentProfile, FacultyProfile
+from .models import StudentProfile, FacultyProfile, Subject
 
 BRANCH_CHOICES = [
     ('', 'Select Department/Branch'),
@@ -128,6 +128,12 @@ class FacultyRegistrationForm(forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}), required=True)
     
     branch = forms.ChoiceField(choices=BRANCH_CHOICES, required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    subjects = forms.ModelMultipleChoiceField(
+        queryset=Subject.objects.all(),
+        required=True,
+        widget=forms.CheckboxSelectMultiple(),
+        label="Subjects Handled"
+    )
 
     class Meta:
         model = User
@@ -159,9 +165,10 @@ class FacultyRegistrationForm(forms.ModelForm):
         user.set_password(raw_password)
         if commit:
             user.save()
-            FacultyProfile.objects.create(
+            profile = FacultyProfile.objects.create(
                 user=user,
                 branch=self.cleaned_data['branch'],
                 password=raw_password
             )
+            profile.subjects.set(self.cleaned_data['subjects'])
         return user
