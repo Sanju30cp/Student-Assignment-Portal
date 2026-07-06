@@ -1,0 +1,156 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Answer Assignment - Assignment Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .question-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .q-type-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: #f1f5f9;
+        color: #475569;
+    }
+
+    .q-mark-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .choice-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .choice-option:hover {
+        background-color: #fafbfd;
+        border-color: var(--primary);
+    }
+
+    .choice-option input[type="radio"] {
+        width: 1.1rem;
+        height: 1.1rem;
+        accent-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-responsive-header" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+        <h2>{{ assignment.title }}</h2>
+        <p style="color: var(--text-muted);">Subject: {{ assignment.subject.subject_name }} &bull; Due Date: {{ assignment.due_date|date:"d-M-Y" }}</p>
+    </div>
+    <span class="badge badge-progress" style="padding: 0.5rem 1rem; font-size: 0.85rem;">{{ submission.status }}</span>
+</div>
+
+<div class="message warning" style="margin-bottom: 1.5rem; font-weight: 500;">
+    <strong>Malpractice Protection:</strong> Copying, pasting, cutting, and right-click interactions are disabled on this page.
+</div>
+
+<form method="POST" id="assignment-form">
+    {% csrf_token %}
+    
+    {% for item in questions_data %}
+        <div class="question-card">
+            <div class="question-header">
+                <span class="q-type-badge">
+                    {% if item.question.question_type == 'MCQ' %}
+                        MCQ Question
+                    {% elif item.question.question_type == 'TWO_MARK' %}
+                        2-Mark Question
+                    {% else %}
+                        5-Mark Question
+                    {% endif %}
+                </span>
+                <span class="q-mark-badge">
+                    {% if item.question.question_type == 'MCQ' %}
+                        1 Mark
+                    {% elif item.question.question_type == 'TWO_MARK' %}
+                        2 Marks
+                    {% else %}
+                        5 Marks
+                    {% endif %}
+                </span>
+            </div>
+            
+            <p style="font-weight: 600; font-size: 1.05rem; margin-bottom: 1.25rem;">Q{{ forloop.counter }}. {{ item.question.question_text }}</p>
+            
+            {% if item.question.question_type == 'MCQ' %}
+                <div class="choices-container">
+                    {% for choice in item.choices %}
+                        <label class="choice-option">
+                            <input type="radio" name="question_{{ item.question.id }}" value="{{ choice.choice_text }}" {% if item.saved_answer == choice.choice_text %}checked{% endif %}>
+                            <span>{{ choice.choice_text }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% elif item.question.question_type == 'TWO_MARK' %}
+                <textarea name="question_{{ item.question.id }}" class="form-control" rows="2" placeholder="Type your short answer here..." required>{{ item.saved_answer }}</textarea>
+            {% else %}
+                <textarea name="question_{{ item.question.id }}" class="form-control" rows="6" placeholder="Type your detailed answer here..." required>{{ item.saved_answer }}</textarea>
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    <div class="flex-responsive-buttons" style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="submit" name="action" value="draft" class="btn btn-secondary" style="flex: 1; padding: 0.75rem;">Save Draft</button>
+        <button type="submit" name="action" value="submit" class="btn btn-primary" style="flex: 2; padding: 0.75rem;" onclick="return confirm('Are you sure you want to final submit? You cannot edit answers after submission.');">Final Submit</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Copy-paste, Cut, Right-Click Blockers
+    document.addEventListener('copy', function(e) {
+        e.preventDefault();
+        alert('Copying text is restricted on this assignment page.');
+    });
+
+    document.addEventListener('paste', function(e) {
+        e.preventDefault();
+        alert('Pasting text is restricted on this assignment page.');
+    });
+
+    document.addEventListener('cut', function(e) {
+        e.preventDefault();
+        alert('Cutting text is restricted on this assignment page.');
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        alert('Right-click is restricted on this assignment page.');
+    });
+</script>
+{% endblock %}

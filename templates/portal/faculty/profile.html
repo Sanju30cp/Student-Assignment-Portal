@@ -1,0 +1,190 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Faculty Profile - Assignment Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .subjects-select-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .subject-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .subject-checkbox-label input {
+        width: 1rem;
+        height: 1rem;
+        accent-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Faculty Profile</h2>
+    <p style="color: var(--text-muted);">Manage your personal details and subjects handled.</p>
+</div>
+
+<div class="grid-2">
+    <!-- Profile View -->
+    <div class="card">
+        <h3 class="card-title">Profile Information</h3>
+        <div class="profile-info">
+            <div class="profile-row">
+                <span class="profile-label">Faculty Name:</span>
+                <span class="profile-val">{{ profile.user.get_full_name|default:profile.user.username }}</span>
+            </div>
+            <div class="profile-row">
+                <span class="profile-label">Department/Branch:</span>
+                <span class="profile-val">{{ profile.branch }}</span>
+            </div>
+            <div class="profile-row">
+                <span class="profile-label">Email Address:</span>
+                <span class="profile-val">{{ profile.user.email }}</span>
+            </div>
+            <div class="profile-row" style="border-bottom: none;">
+                <span class="profile-label">Subjects Handled:</span>
+                <span class="profile-val">
+                    {% if profile.subjects.all %}
+                        {% for sub in profile.subjects.all %}
+                            {{ sub.subject_name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span style="font-style: italic; color: var(--text-muted);">None selected. Update on the right.</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Edit Form -->
+    <div class="card">
+        <h3 class="card-title">Update Profile</h3>
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="first_name">First Name</label>
+                    <input type="text" name="first_name" id="first_name" class="form-control" value="{{ profile.user.first_name }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="last_name">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" class="form-control" value="{{ profile.user.last_name }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" name="email" id="email" class="form-control" value="{{ profile.user.email }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="branch">Department / Branch</label>
+                <select name="branch" id="branch" class="form-control" required>
+                    <option value="" {% if not profile.branch %}selected{% endif %}>Select Branch</option>
+                    <optgroup label="Core Engineering Branches">
+                        <option value="Civil Engineering" {% if profile.branch == "Civil Engineering" %}selected{% endif %}>Civil Engineering</option>
+                        <option value="Mechanical Engineering" {% if profile.branch == "Mechanical Engineering" %}selected{% endif %}>Mechanical Engineering</option>
+                        <option value="Electrical Engineering" {% if profile.branch == "Electrical Engineering" %}selected{% endif %}>Electrical Engineering</option>
+                        <option value="Electronics and Communication Engineering" {% if profile.branch == "Electronics and Communication Engineering" %}selected{% endif %}>Electronics and Communication Engineering</option>
+                        <option value="Computer Science and Engineering" {% if profile.branch == "Computer Science and Engineering" %}selected{% endif %}>Computer Science and Engineering</option>
+                        <option value="Chemical Engineering" {% if profile.branch == "Chemical Engineering" %}selected{% endif %}>Chemical Engineering</option>
+                    </optgroup>
+                    <optgroup label="Computer Science & IT Specializations">
+                        <option value="Information Technology" {% if profile.branch == "Information Technology" %}selected{% endif %}>Information Technology</option>
+                        <option value="Artificial Intelligence and Machine Learning" {% if profile.branch == "Artificial Intelligence and Machine Learning" %}selected{% endif %}>Artificial Intelligence and Machine Learning</option>
+                        <option value="Artificial Intelligence and Data Science" {% if profile.branch == "Artificial Intelligence and Data Science" %}selected{% endif %}>Artificial Intelligence and Data Science</option>
+                        <option value="Data Science" {% if profile.branch == "Data Science" %}selected{% endif %}>Data Science</option>
+                        <option value="Cybersecurity Engineering" {% if profile.branch == "Cybersecurity Engineering" %}selected{% endif %}>Cybersecurity Engineering</option>
+                        <option value="Software Engineering" {% if profile.branch == "Software Engineering" %}selected{% endif %}>Software Engineering</option>
+                        <option value="Cloud Computing" {% if profile.branch == "Cloud Computing" %}selected{% endif %}>Cloud Computing</option>
+                        <option value="Internet of Things (IoT) Engineering" {% if profile.branch == "Internet of Things (IoT) Engineering" %}selected{% endif %}>Internet of Things (IoT) Engineering</option>
+                    </optgroup>
+                    <optgroup label="Electrical, Electronics & Robotics">
+                        <option value="Electronics Engineering" {% if profile.branch == "Electronics Engineering" %}selected{% endif %}>Electronics Engineering</option>
+                        <option value="Electrical and Electronics Engineering" {% if profile.branch == "Electrical and Electronics Engineering" %}selected{% endif %}>Electrical and Electronics Engineering</option>
+                        <option value="Instrumentation Engineering" {% if profile.branch == "Instrumentation Engineering" %}selected{% endif %}>Instrumentation Engineering</option>
+                        <option value="Biomedical Engineering" {% if profile.branch == "Biomedical Engineering" %}selected{% endif %}>Biomedical Engineering</option>
+                        <option value="Robotics Engineering" {% if profile.branch == "Robotics Engineering" %}selected{% endif %}>Robotics Engineering</option>
+                        <option value="Automation Engineering" {% if profile.branch == "Automation Engineering" %}selected{% endif %}>Automation Engineering</option>
+                    </optgroup>
+                    <optgroup label="Mechanical, Aerospace & Production">
+                        <option value="Automobile Engineering" {% if profile.branch == "Automobile Engineering" %}selected{% endif %}>Automobile Engineering</option>
+                        <option value="Industrial Engineering" {% if profile.branch == "Industrial Engineering" %}selected{% endif %}>Industrial Engineering</option>
+                        <option value="Production Engineering" {% if profile.branch == "Production Engineering" %}selected{% endif %}>Production Engineering</option>
+                        <option value="Manufacturing Engineering" {% if profile.branch == "Manufacturing Engineering" %}selected{% endif %}>Manufacturing Engineering</option>
+                        <option value="Mechatronics Engineering" {% if profile.branch == "Mechatronics Engineering" %}selected{% endif %}>Mechatronics Engineering</option>
+                        <option value="Aerospace Engineering" {% if profile.branch == "Aerospace Engineering" %}selected{% endif %}>Aerospace Engineering</option>
+                        <option value="Aeronautical Engineering" {% if profile.branch == "Aeronautical Engineering" %}selected{% endif %}>Aeronautical Engineering</option>
+                        <option value="Marine Engineering" {% if profile.branch == "Marine Engineering" %}selected{% endif %}>Marine Engineering</option>
+                    </optgroup>
+                    <optgroup label="Civil & Infrastructure Specializations">
+                        <option value="Structural Engineering" {% if profile.branch == "Structural Engineering" %}selected{% endif %}>Structural Engineering</option>
+                        <option value="Environmental Engineering" {% if profile.branch == "Environmental Engineering" %}selected{% endif %}>Environmental Engineering</option>
+                        <option value="Transportation Engineering" {% if profile.branch == "Transportation Engineering" %}selected{% endif %}>Transportation Engineering</option>
+                        <option value="Construction Engineering" {% if profile.branch == "Construction Engineering" %}selected{% endif %}>Construction Engineering</option>
+                        <option value="Geotechnical Engineering" {% if profile.branch == "Geotechnical Engineering" %}selected{% endif %}>Geotechnical Engineering</option>
+                        <option value="Water Resources Engineering" {% if profile.branch == "Water Resources Engineering" %}selected{% endif %}>Water Resources Engineering</option>
+                    </optgroup>
+                    <optgroup label="Chemical, Materials & Process Engineering">
+                        <option value="Petroleum Engineering" {% if profile.branch == "Petroleum Engineering" %}selected{% endif %}>Petroleum Engineering</option>
+                        <option value="Materials Engineering" {% if profile.branch == "Materials Engineering" %}selected{% endif %}>Materials Engineering</option>
+                        <option value="Metallurgical Engineering" {% if profile.branch == "Metallurgical Engineering" %}selected{% endif %}>Metallurgical Engineering</option>
+                        <option value="Polymer Engineering" {% if profile.branch == "Polymer Engineering" %}selected{% endif %}>Polymer Engineering</option>
+                        <option value="Ceramic Engineering" {% if profile.branch == "Ceramic Engineering" %}selected{% endif %}>Ceramic Engineering</option>
+                        <option value="Food Engineering" {% if profile.branch == "Food Engineering" %}selected{% endif %}>Food Engineering</option>
+                        <option value="Biochemical Engineering" {% if profile.branch == "Biochemical Engineering" %}selected{% endif %}>Biochemical Engineering</option>
+                    </optgroup>
+                    <optgroup label="Energy & Environmental Engineering">
+                        <option value="Energy Engineering" {% if profile.branch == "Energy Engineering" %}selected{% endif %}>Energy Engineering</option>
+                        <option value="Renewable Energy Engineering" {% if profile.branch == "Renewable Energy Engineering" %}selected{% endif %}>Renewable Energy Engineering</option>
+                        <option value="Nuclear Engineering" {% if profile.branch == "Nuclear Engineering" %}selected{% endif %}>Nuclear Engineering</option>
+                        <option value="Mining Engineering" {% if profile.branch == "Mining Engineering" %}selected{% endif %}>Mining Engineering</option>
+                    </optgroup>
+                    <optgroup label="Agriculture & Biotechnology">
+                        <option value="Agricultural Engineering" {% if profile.branch == "Agricultural Engineering" %}selected{% endif %}>Agricultural Engineering</option>
+                        <option value="Biotechnology Engineering" {% if profile.branch == "Biotechnology Engineering" %}selected{% endif %}>Biotechnology Engineering</option>
+                        <option value="Genetic Engineering" {% if profile.branch == "Genetic Engineering" %}selected{% endif %}>Genetic Engineering</option>
+                    </optgroup>
+                    <optgroup label="Other Specialized Technologies">
+                        <option value="Textile Engineering" {% if profile.branch == "Textile Engineering" %}selected{% endif %}>Textile Engineering</option>
+                        <option value="Leather Technology" {% if profile.branch == "Leather Technology" %}selected{% endif %}>Leather Technology</option>
+                        <option value="Printing Technology" {% if profile.branch == "Printing Technology" %}selected{% endif %}>Printing Technology</option>
+                        <option value="Packaging Technology" {% if profile.branch == "Packaging Technology" %}selected{% endif %}>Packaging Technology</option>
+                        <option value="Naval Architecture" {% if profile.branch == "Naval Architecture" %}selected{% endif %}>Naval Architecture</option>
+                        <option value="Railway Engineering" {% if profile.branch == "Railway Engineering" %}selected{% endif %}>Railway Engineering</option>
+                        <option value="Fire Engineering" {% if profile.branch == "Fire Engineering" %}selected{% endif %}>Fire Engineering</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Subject Checklist -->
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label class="form-label">Manage Subjects Handled</label>
+                <div class="subjects-select-grid">
+                    {% for subject in all_subjects %}
+                        <label class="subject-checkbox-label">
+                            <input type="checkbox" name="subjects" value="{{ subject.id }}" {% if subject in profile.subjects.all %}checked{% endif %}>
+                            <span>{{ subject.subject_name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

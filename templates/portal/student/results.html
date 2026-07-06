@@ -1,0 +1,57 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}My Results - Assignment Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>My Results</h2>
+    <p style="color: var(--text-muted);">View marks and feedback on your evaluated assignments.</p>
+</div>
+
+<div class="card" style="padding: 0;">
+    <div class="table-responsive" style="border: none; margin-bottom: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Assignment</th>
+                    <th>Submission Date</th>
+                    <th>Marks</th>
+                    <th>Review</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if submissions %}
+                    {% for sub in submissions %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ sub.assignment.subject.subject_name }}</td>
+                            <td>{{ sub.assignment.title }}</td>
+                            <td>{{ sub.submitted_date|date:"d-M-Y" }}</td>
+                            <td>
+                                <strong style="color: var(--success); font-size: 1.1rem;">
+                                    {{ sub.evaluation.marks }}/10
+                                </strong>
+                            </td>
+                            <td>
+                                <span style="font-style: italic; color: var(--text-muted);">
+                                    {{ sub.evaluation.review|truncatechars:50 }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'view_submission' sub.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">View Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-style: italic;">
+                            No assignments evaluated yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

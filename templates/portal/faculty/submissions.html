@@ -1,0 +1,79 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Student Submissions - Assignment Portal{% endblock %}
+
+{% block content %}
+<div class="flex-responsive-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <h2>Student Submissions</h2>
+        <p style="color: var(--text-muted);">Manage and grade student assignment submissions.</p>
+    </div>
+    {% if submissions %}
+        <a href="{% url 'download_all_submissions_pdf' %}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.6rem 1.2rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Download Report
+        </a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: 0;">
+    <div class="table-responsive" style="border: none; margin-bottom: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Assignment</th>
+                    <th>Submission Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if submissions %}
+                    {% for sub in submissions %}
+                        <tr>
+                            <td>
+                                <strong>{{ sub.student.user.get_full_name|default:sub.student.user.username }}</strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Roll No: {{ sub.student.roll_no }}</span>
+                            </td>
+                            <td>{{ sub.assignment.subject.subject_name }}</td>
+                            <td>{{ sub.assignment.title }}</td>
+                            <td>{{ sub.submitted_date|date:"d-M-Y H:i"|default:"[Not Submitted Yet]" }}</td>
+                            <td>
+                                {% if sub.status == 'Pending' %}
+                                    <span class="badge badge-pending">Pending</span>
+                                {% elif sub.status == 'In Progress' %}
+                                    <span class="badge badge-progress">In Progress</span>
+                                {% elif sub.status == 'Submitted' %}
+                                    <span class="badge badge-submitted">Submitted</span>
+                                {% elif sub.status == 'Evaluated' %}
+                                    <span class="badge badge-evaluated">Evaluated</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sub.status == 'Submitted' %}
+                                    <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">Evaluate</a>
+                                {% elif sub.status == 'Evaluated' %}
+                                    <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">View / Recheck</a>
+                                {% else %}
+                                    <span style="font-style: italic; color: var(--text-muted); font-size: 0.85rem;">No Action</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-style: italic;">
+                            No student submissions found.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Assigned Assignments - Assignment Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Assigned Assignments</h2>
+    <p style="color: var(--text-muted);">View and complete assignments for your enrolled subjects.</p>
+</div>
+
+<div class="card" style="padding: 0;">
+    <div class="table-responsive" style="border: none; margin-bottom: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Assignment Title</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if assignments %}
+                    {% for item in assignments %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ item.assignment.subject.subject_name }}</td>
+                            <td>{{ item.assignment.title }}</td>
+                            <td>{{ item.assignment.due_date|date:"d-M-Y" }}</td>
+                            <td>
+                                {% if item.status == 'Pending' %}
+                                    <span class="badge badge-pending">Pending</span>
+                                {% elif item.status == 'In Progress' %}
+                                    <span class="badge badge-progress">In Progress</span>
+                                {% elif item.status == 'Submitted' %}
+                                    <span class="badge badge-submitted">Submitted</span>
+                                {% elif item.status == 'Evaluated' %}
+                                    <span class="badge badge-evaluated">Evaluated</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status == 'Pending' %}
+                                    <a href="{% url 'start_assignment' item.assignment.id %}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">Start</a>
+                                {% elif item.status == 'In Progress' %}
+                                    <a href="{% url 'do_assignment' item.submission_id %}" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem; border-color: var(--primary); color: var(--primary);">Continue</a>
+                                {% else %}
+                                    <a href="{% url 'view_submission' item.submission_id %}" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">View</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem; font-style: italic;">
+                            No assignments published for your enrolled subjects yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

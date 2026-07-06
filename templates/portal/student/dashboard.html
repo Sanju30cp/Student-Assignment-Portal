@@ -1,0 +1,186 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Student Dashboard - Assignment Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Welcome, {{ profile.user.get_full_name|default:profile.user.username }}!</h2>
+    <p style="color: var(--text-muted);">Semester {{ profile.semester }} &bull; {{ profile.branch }} &bull; Roll No: {{ profile.roll_no }}</p>
+</div>
+
+<!-- Metrics Row -->
+<div class="grid-3" style="margin-bottom: 2.5rem;">
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--primary); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Total Assignments</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--text);">{{ total_assignments }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--warning); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Pending Assignments</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--warning);">{{ pending_assignments }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--success); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Completed</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--success);">{{ completed_assignments }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--primary-hover); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Average Score</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--text);">{{ average_score }}</span>
+    </div>
+</div>
+
+<!-- Visual Analytics Row -->
+<div class="grid-2" style="margin-bottom: 2.5rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <h3 class="card-title">Assignment Progress</h3>
+        <div style="position: relative; height: 300px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="progressChart"></canvas>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <h3 class="card-title">Subject Performance</h3>
+        <div style="position: relative; height: 300px;">
+            <canvas id="subjectPerformanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Enrolled Subjects -->
+    <div class="card">
+        <h3 class="card-title">My Subjects</h3>
+        {% if my_subjects %}
+            <ul style="list-style: none; padding: 0;">
+                {% for subject in my_subjects %}
+                    <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 500;">{{ subject.subject_name }}</span>
+                        <span class="badge badge-evaluated" style="font-size: 0.7rem;">Enrolled</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--text-muted); font-style: italic;">You have not enrolled in any subjects yet. Enroll in available subjects on the right to view assignments.</p>
+        {% endif %}
+    </div>
+
+    <!-- Available Subjects -->
+    <div class="card">
+        <h3 class="card-title">Available Subjects</h3>
+        {% if available_subjects %}
+            <ul style="list-style: none; padding: 0;">
+                {% for subject in available_subjects %}
+                    <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                        <span>{{ subject.subject_name }}</span>
+                        <a href="{% url 'enroll_subject' subject.id %}" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 6px;">Enroll</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--text-muted); font-style: italic;">No other subjects available at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Doughnut Chart for Assignment Progress
+        const statusCounts = JSON.parse('{{ status_counts_json|escapejs }}');
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        new Chart(progressCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'In Progress', 'Submitted', 'Evaluated'],
+                datasets: [{
+                    data: [
+                        statusCounts['Pending'] || 0,
+                        statusCounts['In Progress'] || 0,
+                        statusCounts['Submitted'] || 0,
+                        statusCounts['Evaluated'] || 0
+                    ],
+                    backgroundColor: [
+                        '#64748b', // Slate for Pending
+                        '#3b82f6', // Blue for In Progress
+                        '#6366f1', // Indigo for Submitted
+                        '#10b981'  // Success/Green for Evaluated
+                    ],
+                    borderWidth: 2,
+                    borderColor: 'var(--card-bg)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text') || '#0f172a',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Chart for Subject Performance
+        const subjectLabels = JSON.parse('{{ subject_chart_labels_json|escapejs }}');
+        const subjectData = JSON.parse('{{ subject_chart_data_json|escapejs }}');
+        
+        const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
+        new Chart(subjectCtx, {
+            type: 'bar',
+            data: {
+                labels: subjectLabels,
+                datasets: [{
+                    label: 'Average Score',
+                    data: subjectData,
+                    backgroundColor: '#4f46e5', // Primary Indigo
+                    borderRadius: 6,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#64748b',
+                            font: {
+                                family: 'Inter'
+                            }
+                        },
+                        grid: {
+                            color: 'var(--border)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#64748b',
+                            font: {
+                                family: 'Inter'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

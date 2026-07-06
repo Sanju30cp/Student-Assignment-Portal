@@ -1,0 +1,135 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}View Submission - Assignment Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .question-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .q-type-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: #f1f5f9;
+        color: #475569;
+    }
+
+    .q-mark-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .answer-box {
+        padding: 1rem;
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-top: 0.75rem;
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-responsive-header" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+        <h2>Submission: {{ assignment.title }}</h2>
+        <p style="color: var(--text-muted);">
+            Subject: {{ assignment.subject.subject_name }} &bull; 
+            Submitted: {{ submission.submitted_date|date:"d-M-Y H:i"|default:"Draft" }}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+        {% if submission.status == 'Submitted' %}
+            <span class="badge badge-submitted" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Submitted</span>
+        {% elif submission.status == 'Evaluated' %}
+            <span class="badge badge-evaluated" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Evaluated</span>
+        {% endif %}
+        
+        <a href="{% url 'download_submission_pdf' submission.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Download PDF
+        </a>
+    </div>
+</div>
+
+{% if evaluation %}
+    <div class="card" style="border-left: 5px solid var(--success); background-color: #f0fdf4;">
+        <h3 style="color: #065f46; margin-bottom: 0.75rem;">Evaluation & Feedback</h3>
+        <div style="margin-bottom: 0.5rem;">
+            <strong>Marks Assigned:</strong> 
+            <span style="font-size: 1.25rem; font-weight: 700; color: #047857;">{{ evaluation.marks }} / 10</span>
+        </div>
+        <div>
+            <strong>Faculty Review:</strong>
+            <p style="margin-top: 0.25rem; color: #374151; font-style: italic;">"{{ evaluation.review }}"</p>
+        </div>
+    </div>
+{% endif %}
+
+<h3 style="margin-bottom: 1.25rem;">Your Answers</h3>
+
+{% for ans in answers %}
+    <div class="question-card">
+        <div class="question-header">
+            <span class="q-type-badge">
+                {% if ans.question.question_type == 'MCQ' %}
+                    MCQ Question
+                {% elif ans.question.question_type == 'TWO_MARK' %}
+                    2-Mark Question
+                {% else %}
+                    5-Mark Question
+                {% endif %}
+            </span>
+            <span class="q-mark-badge">
+                {% if ans.question.question_type == 'MCQ' %}
+                    1 Mark
+                {% elif ans.question.question_type == 'TWO_MARK' %}
+                    2 Marks
+                {% else %}
+                    5 Marks
+                {% endif %}
+            </span>
+        </div>
+        
+        <p style="font-weight: 600;">Q{{ forloop.counter }}. {{ ans.question.question_text }}</p>
+        
+        <div class="answer-box">
+            {% if ans.question.question_type == 'MCQ' %}
+                <strong>Selected Option:</strong> {{ ans.answer_text|default:"[No choice selected]" }}
+            {% else %}
+                <strong>Your Answer:</strong><br>
+                <div style="margin-top: 0.5rem;">{{ ans.answer_text|default:"[No answer written]" }}</div>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+
+<div style="margin-top: 2rem;">
+    <a href="{% url 'student_assignments' %}" class="btn btn-secondary">&larr; Back to Assignments</a>
+</div>
+{% endblock %}

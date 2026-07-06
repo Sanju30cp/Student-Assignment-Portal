@@ -1,0 +1,114 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Evaluate Submission - Assignment Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .submission-item {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .question-info {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .answer-text {
+        padding: 1rem;
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-top: 0.75rem;
+        font-family: inherit;
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Evaluate Submission</h2>
+    <p style="color: var(--text-muted);">
+        Student: <strong>{% if submission.student.user.get_full_name %}{{ submission.student.user.get_full_name }}{% else %}{{ submission.student.user.username }}{% endif %}</strong> &bull; 
+        Roll No: {{ submission.student.roll_no }} &bull; 
+        Assignment: {{ assignment.title }}
+    </p>
+</div>
+
+<div class="grid-2">
+    <!-- Student Answers List -->
+    <div style="max-height: 700px; overflow-y: auto; padding-right: 0.5rem;">
+        <h3 style="margin-bottom: 1rem;">Student Answers</h3>
+        
+        {% for item in answers_data %}
+            <div class="submission-item">
+                <div class="question-info">
+                    <span class="badge badge-pending">
+                        {% if item.question.question_type == 'MCQ' %}MCQ{% elif item.question.question_type == 'TWO_MARK' %}2-Mark{% else %}5-Mark{% endif %}
+                    </span>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+                        {% if item.question.question_type == 'MCQ' %}1 Mark{% elif item.question.question_type == 'TWO_MARK' %}2 Marks{% else %}5 Marks{% endif %}
+                    </span>
+                </div>
+                
+                <p style="font-weight: 600; margin-bottom: 0.5rem;">Q{{ forloop.counter }}. {{ item.question.question_text }}</p>
+                
+                {% if item.question.question_type == 'MCQ' %}
+                    <div style="margin-bottom: 0.75rem; font-size: 0.85rem;">
+                        <strong>Options:</strong>
+                        <ul style="margin-left: 1.25rem; list-style-type: disc;">
+                            {% for choice in item.choices %}
+                                <li style="{% if choice.is_correct %}color: var(--success); font-weight: 600;{% endif %}">
+                                    {{ choice.choice_text }} {% if choice.is_correct %}(Correct Answer){% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                <div class="answer-text">
+                    {% if item.question.question_type == 'MCQ' %}
+                        <strong>Selected Choice:</strong> {{ item.answer }}
+                    {% else %}
+                        <strong>Submitted Answer:</strong><br>
+                        <div style="margin-top: 0.5rem;">{{ item.answer|default:"[Left Blank]" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Evaluation Form -->
+    <div>
+        <div class="card" style="position: sticky; top: 100px;">
+            <h3 class="card-title">Grade Submission</h3>
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="marks">Marks Awarded (0 to 10)</label>
+                    <input type="number" name="marks" id="marks" class="form-control" min="0" max="10" value="{{ evaluation.marks|default:0 }}" required>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Scale: 0 (Min) to 10 (Max)</small>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label class="form-label" for="review">Feedback / Review Comment</label>
+                    <textarea name="review" id="review" class="form-control" rows="5" placeholder="e.g. Good understanding of core concepts. Enhance description of normal forms." required>{{ evaluation.review }}</textarea>
+                </div>
+                
+                <div class="flex-responsive-buttons" style="display: flex; gap: 1rem;">
+                    <a href="{% url 'submitted_assignments' %}" class="btn btn-secondary" style="flex: 1; padding: 0.75rem;">Back</a>
+                    <button type="submit" class="btn btn-primary" style="flex: 2; padding: 0.75rem;">Submit Evaluation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

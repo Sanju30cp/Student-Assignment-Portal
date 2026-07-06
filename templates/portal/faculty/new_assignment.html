@@ -1,0 +1,41 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Create Assignment - Assignment Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div class="card">
+        <h2 style="margin-bottom: 0.5rem; font-size: 1.75rem;">Create New Assignment</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Set up basic details before adding questions</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="title">Assignment Title</label>
+                <input type="text" name="title" id="title" class="form-control" placeholder="e.g. Assignment 1 - DBMS" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="subject">Subject Name</label>
+                <select name="subject" id="subject" class="form-control" required>
+                    <option value="" disabled selected>Select a subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label class="form-label" for="due_date">Due Date</label>
+                <input type="date" name="due_date" id="due_date" class="form-control" required>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'faculty_dashboard' %}" class="btn btn-secondary" style="flex: 1; padding: 0.75rem;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="flex: 2; padding: 0.75rem;">Next: Create Questions &rarr;</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

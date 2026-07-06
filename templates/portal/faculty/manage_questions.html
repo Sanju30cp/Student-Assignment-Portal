@@ -1,0 +1,154 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Manage Questions - Assignment Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-list-item {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .choice-tag {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-right: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .choice-tag.correct {
+        background-color: #d1fae5;
+        border-color: #a7f3d0;
+        color: #065f46;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Manage Questions: {{ assignment.title }}</h2>
+    <p style="color: var(--text-muted);">Subject: {{ assignment.subject.subject_name }} &bull; Due Date: {{ assignment.due_date|date:"d-M-Y" }}</p>
+</div>
+
+<div class="grid-2">
+    <!-- Question Creator -->
+    <div class="card">
+        <h3 class="card-title">Add a Question</h3>
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="question_type">Question Type</label>
+                <select name="question_type" id="question_type" class="form-control" required>
+                    <option value="MCQ" selected>Multiple Choice Question (MCQ)</option>
+                    <option value="TWO_MARK">2-Mark Question (Short Answer)</option>
+                    <option value="FIVE_MARK">5-Mark Question (Long Answer)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="question_text">Question Text</label>
+                <textarea name="question_text" id="question_text" class="form-control" rows="3" placeholder="Enter question description..." required></textarea>
+            </div>
+            
+            <!-- MCQ Choice Sub-Form (toggled by JS) -->
+            <div id="mcq-choices-container">
+                <label class="form-label">Choices and Correct Choice</label>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <input type="radio" name="correct_choice" value="A" checked style="width: 1.1rem; height: 1.1rem; accent-color: var(--primary);">
+                    <input type="text" name="choice_a" id="choice_a" class="form-control" placeholder="Choice A" required>
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <input type="radio" name="correct_choice" value="B" style="width: 1.1rem; height: 1.1rem; accent-color: var(--primary);">
+                    <input type="text" name="choice_b" id="choice_b" class="form-control" placeholder="Choice B" required>
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <input type="radio" name="correct_choice" value="C" style="width: 1.1rem; height: 1.1rem; accent-color: var(--primary);">
+                    <input type="text" name="choice_c" id="choice_c" class="form-control" placeholder="Choice C (Optional)">
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <input type="radio" name="correct_choice" value="D" style="width: 1.1rem; height: 1.1rem; accent-color: var(--primary);">
+                    <input type="text" name="choice_d" id="choice_d" class="form-control" placeholder="Choice D (Optional)">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.7rem;">Add Question</button>
+        </form>
+    </div>
+    
+    <!-- Question List -->
+    <div class="card">
+        <div class="flex-responsive-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+            <h3>Added Questions ({{ questions_data|length }})</h3>
+            {% if not assignment.is_published %}
+                {% if questions_data %}
+                    <a href="{% url 'publish_assignment' assignment.id %}" class="btn btn-success" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;" onclick="return confirm('Ready to publish? Students will be able to see and start this assignment.');">Publish Assignment</a>
+                {% endif %}
+            {% else %}
+                <span class="badge badge-evaluated">Published</span>
+            {% endif %}
+        </div>
+        
+        <div style="max-height: 500px; overflow-y: auto; padding-right: 0.5rem;">
+            {% if questions_data %}
+                {% for item in questions_data %}
+                    <div class="question-list-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span class="badge badge-pending" style="font-size: 0.7rem;">Q{{ forloop.counter }} - {{ item.question.question_type }}</span>
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">
+                                {% if item.question.question_type == 'MCQ' %}1 Mark{% elif item.question.question_type == 'TWO_MARK' %}2 Marks{% else %}5 Marks{% endif %}
+                            </span>
+                        </div>
+                        <p style="font-weight: 500; color: var(--text);">{{ item.question.question_text }}</p>
+                        
+                        {% if item.question.question_type == 'MCQ' %}
+                            <div style="margin-top: 0.5rem;">
+                                {% for choice in item.choices %}
+                                    <span class="choice-tag {% if choice.is_correct %}correct{% endif %}">
+                                        {{ choice.choice_text }} {% if choice.is_correct %}(Correct){% endif %}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-style: italic; text-align: center; padding: 2rem;">No questions added yet. Use the form on the left to add questions.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle switching question type to show/hide MCQ choices input fields
+    document.getElementById('question_type').addEventListener('change', function() {
+        var choicesDiv = document.getElementById('mcq-choices-container');
+        var choiceA = document.getElementById('choice_a');
+        var choiceB = document.getElementById('choice_b');
+        
+        if (this.value === 'MCQ') {
+            choicesDiv.style.display = 'block';
+            choiceA.required = true;
+            choiceB.required = true;
+        } else {
+            choicesDiv.style.display = 'none';
+            choiceA.required = false;
+            choiceB.required = false;
+        }
+    });
+</script>
+{% endblock %}

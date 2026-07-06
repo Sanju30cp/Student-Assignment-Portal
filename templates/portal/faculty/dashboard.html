@@ -1,0 +1,247 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Faculty Dashboard - Assignment Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Welcome, Dr./Prof. {{ profile.user.get_full_name|default:profile.user.username }}</h2>
+    <p style="color: var(--text-muted);">Department/Branch: {{ profile.branch }}</p>
+</div>
+
+<!-- Metrics Row -->
+<div class="grid-3" style="margin-bottom: 2.5rem;">
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--primary); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Total Assignments</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--text);">{{ total_assignments }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--success); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Active Assignments</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--success);">{{ active_assignments }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--warning); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Pending Evaluations</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--warning);">{{ pending_evaluations }}</span>
+    </div>
+    
+    <div class="card" style="text-align: center; border-bottom: 4px solid var(--primary-hover); margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem;">Total Submissions</h4>
+        <span style="font-size: 2.25rem; font-weight: 700; font-family: 'Outfit'; color: var(--text);">{{ total_submissions }}</span>
+    </div>
+</div>
+
+<!-- Visual Analytics Row -->
+<div class="grid-2" style="margin-bottom: 2.5rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <h3 class="card-title">Submission Status Distribution</h3>
+        <div style="position: relative; height: 300px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="facultyStatusChart"></canvas>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <h3 class="card-title">Submissions by Assignment</h3>
+        <div style="position: relative; height: 300px;">
+            <canvas id="facultySubmissionsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- My Assignments Table -->
+<div class="card" style="margin-bottom: 2.5rem;">
+    <h3 class="card-title">My Assignments</h3>
+    {% if my_assignments %}
+        <div class="table-responsive" style="border: none; margin-bottom: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Assignment Title</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in my_assignments %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ assignment.subject.subject_name }}</td>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.due_date|date:"d-M-Y" }}</td>
+                            <td>
+                                {% if assignment.is_published %}
+                                    <span class="badge badge-evaluated" style="font-size: 0.75rem;">Active / Published</span>
+                                {% else %}
+                                    <span class="badge badge-pending" style="font-size: 0.75rem;">Draft / Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                                {% if not assignment.is_published %}
+                                    <a href="{% url 'manage_questions' assignment.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 6px;">Questions</a>
+                                    <a href="{% url 'manage_questions' assignment.id %}" class="btn btn-success" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 6px;">Publish</a>
+                                {% endif %}
+                                <form method="post" action="{% url 'delete_assignment' assignment.id %}" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to delete the assignment &quot;{{ assignment.title }}&quot;? All student submissions and grades will be permanently deleted.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 6px;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted); font-style: italic; padding: 1rem 0;">You have not created any assignments yet. Click "Create New Assignment" below to start.</p>
+    {% endif %}
+</div>
+
+<div class="grid-2">
+    <!-- Handled Subjects -->
+    <div class="card">
+        <h3 class="card-title">Subjects Handled</h3>
+        {% if my_subjects %}
+            <ul style="list-style: none; padding: 0;">
+                {% for subject in my_subjects %}
+                    <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--text);">{{ subject.subject_name }}</strong>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--text-muted); font-style: italic;">
+                You haven't added any subjects to your handled list. Update your list in the profile page to track them.
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <h3 class="card-title">Quick Actions</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            <a href="{% url 'new_assignment' %}" class="btn btn-primary" style="padding: 0.85rem;">Create New Assignment</a>
+            <a href="{% url 'submitted_assignments' %}" class="btn btn-secondary" style="padding: 0.85rem;">Evaluate Student Submissions</a>
+            <a href="{% url 'faculty_profile' %}" class="btn btn-secondary" style="padding: 0.85rem;">Update My Profile / Subjects</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Doughnut Chart for Submission Status
+        const statusCounts = JSON.parse('{{ status_counts_json|escapejs }}');
+        const statusCtx = document.getElementById('facultyStatusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'In Progress', 'Submitted', 'Evaluated'],
+                datasets: [{
+                    data: [
+                        statusCounts['Pending'] || 0,
+                        statusCounts['In Progress'] || 0,
+                        statusCounts['Submitted'] || 0,
+                        statusCounts['Evaluated'] || 0
+                    ],
+                    backgroundColor: [
+                        '#64748b', // Slate for Pending
+                        '#3b82f6', // Blue for In Progress
+                        '#6366f1', // Indigo for Submitted
+                        '#10b981'  // Success/Green for Evaluated
+                    ],
+                    borderWidth: 2,
+                    borderColor: 'var(--card-bg)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text') || '#0f172a',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Chart for Submissions and Evaluations
+        const assignmentLabels = JSON.parse('{{ assignment_chart_labels_json|escapejs }}');
+        const submissionsData = JSON.parse('{{ assignment_chart_submissions_json|escapejs }}');
+        const evaluationsData = JSON.parse('{{ assignment_chart_evaluations_json|escapejs }}');
+        
+        const subCtx = document.getElementById('facultySubmissionsChart').getContext('2d');
+        new Chart(subCtx, {
+            type: 'bar',
+            data: {
+                labels: assignmentLabels,
+                datasets: [
+                    {
+                        label: 'Submissions Received',
+                        data: submissionsData,
+                        backgroundColor: '#6366f1', // Indigo
+                        borderRadius: 6,
+                        maxBarThickness: 30
+                    },
+                    {
+                        label: 'Evaluations Completed',
+                        data: evaluationsData,
+                        backgroundColor: '#10b981', // Success Green
+                        borderRadius: 6,
+                        maxBarThickness: 30
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#64748b',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#64748b',
+                            font: {
+                                family: 'Inter'
+                            },
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'var(--border)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#64748b',
+                            font: {
+                                family: 'Inter'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
