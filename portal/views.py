@@ -147,7 +147,12 @@ def student_dashboard(request):
     
     # If no subjects exist in DB, create some defaults for testing convenience
     if not Subject.objects.exists():
-        for name in ['Database Management System', 'Operating Systems', 'Computer Networks', 'Software Engineering', 'Machine Learning', 'Data Structures']:
+        for name in [
+            'Database Management System', 'Operating Systems', 'Computer Networks', 
+            'Software Engineering', 'Machine Learning', 'Data Structures',
+            'Deep Learning', 'Cloud Computing', 'Artificial Intelligence',
+            'Cybersecurity', 'Web Technology', 'Data Science'
+        ]:
             Subject.objects.create(subject_name=name)
         available_subjects = Subject.objects.all()
 

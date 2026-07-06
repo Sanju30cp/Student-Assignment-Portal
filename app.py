@@ -11,8 +11,20 @@ try:
     print("\n[STARTUP] Running database migrations...")
     call_command('migrate', interactive=False)
     print("[STARTUP] Database migrations applied successfully.")
+
+    # Create default subjects if none exist
+    from portal.models import Subject
+    default_subjects = [
+        'Database Management System', 'Operating Systems', 'Computer Networks', 
+        'Software Engineering', 'Machine Learning', 'Data Structures',
+        'Deep Learning', 'Cloud Computing', 'Artificial Intelligence',
+        'Cybersecurity', 'Web Technology', 'Data Science'
+    ]
+    for name in default_subjects:
+        Subject.objects.get_or_create(subject_name=name)
+    print("[STARTUP] Default subjects checked/created.")
 except Exception as e:
-    print(f"[STARTUP ERROR] Error applying migrations: {e}")
+    print(f"[STARTUP ERROR] Error applying migrations or creating subjects: {e}")
 
 # Auto-collect static files on startup
 try:
