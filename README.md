@@ -1,91 +1,224 @@
-# Student Assignment Portal
+# 🎓 Student Assignment Portal
 
-A clean, modern, and responsive Django web application designed for students and faculty members to manage, submit, evaluate, and track academic assignments online.
+A full-stack Django web application that streamlines assignment management between faculty and students. The portal allows instructors to create assignments, evaluate submissions, and manage subjects, while students can submit assignments and track their academic progress.
+
+## 🌐 Live Demo
+
+**Website:** https://saroja307.pythonanywhere.com/
+
+---
 
 ## 🚀 Features
 
-### Core Portals
-*   **Role-Based Access:** Strict separation of student and faculty portals. Users can only log in through their designated login portals.
-*   **Systems Administration:** Access to the Django Admin panel for root system management.
+### 👨‍🏫 Faculty
 
-### Faculty Features
-*   **Assignment Management:** Create assignments for specific subjects, set deadlines, and manage questions.
-*   **Question Creator:** Support for multiple question types:
-    *   Multiple Choice Questions (MCQ) with option validation.
-    *   Short Answer (2-Mark) questions.
-    *   Detailed (5-Mark) questions.
-*   **Submissions Evaluation:** View list of student submissions, assign marks (0–10), and write textual review feedback.
-*   **Performance Metrics:** View live analytical charts of submission statuses and assignment completions.
-*   **Reports Export:** Download dynamic, formatted PDF reports of student submissions using ReportLab.
+- Faculty Registration & Login
+- Faculty Dashboard
+- Create Subjects
+- Create Assignments
+- Upload Questions
+- View Student Submissions
+- Evaluate Assignments
+- Assign Marks
+- Manage Student Records
 
-### Student Features
-*   **Subject Enrollment:** Search and enroll in subjects handled by the department.
-*   **Assignment Workflows:** 
-    *   View all pending, in-progress, and completed assignments.
-    *   Draft and save answers locally (*In Progress*).
-    *   Submit answers before the due date (*Submitted*).
-*   **Results Viewer:** View evaluations, read faculty feedback, and download PDF summaries of submitted answers.
+### 👨‍🎓 Student
 
----
+- Student Registration & Login
+- Student Dashboard
+- View Available Subjects
+- View Assignments
+- Submit Assignments
+- Track Submission Status
+- View Evaluation Results
 
-## 🛠️ Technology Stack
-*   **Backend Framework:** Django (Python)
-*   **Frontend Design:** Semantic HTML5, CSS Variables (Custom Theme), Vanilla JavaScript
-*   **Data Visualization:** Chart.js
-*   **PDF Generation:** ReportLab
-*   **Static Asset Handling:** WhiteNoise (configured for production)
-*   **Database:** SQLite
+### 🔐 Authentication
+
+- Secure Login
+- Logout
+- Role-based Access
+- Session Management
 
 ---
 
-## 💻 Local Installation & Setup
+## 🛠️ Tech Stack
 
-### Prerequisites
-*   Python 3.10 or higher installed.
-*   SQLite command-line tool (optional, for direct database queries).
+### Backend
 
-### Setup Steps
-1.  **Clone / Download the Repository:**
-    ```bash
-    cd Assignment_Portal
-    ```
+- Django
+- Python
 
-2.  **Install Required Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+### Frontend
 
-3.  **Run Database Migrations:**
-    ```bash
-    python manage.py migrate
-    ```
+- HTML5
+- CSS3
+- Django Templates
 
-4.  **Create an Admin (Superuser) Account:**
-    ```bash
-    python manage.py createsuperuser
-    ```
+### Database
 
-5.  **Start the Local Server:**
-    ```bash
-    python manage.py runserver
-    ```
-    Access the portal at `http://127.0.0.1:8000/`.
+- SQLite3
+
+### Deployment
+
+- PythonAnywhere
 
 ---
 
-## ☁️ Deployment Guide (Render)
+## 📂 Project Structure
 
-The codebase is pre-configured with the correct dependencies and scripts for hosting on Render.
+```
+Student-Assignment-Portal/
+│
+├── assignment_portal/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+│
+├── portal/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   └── admin.py
+│
+├── templates/
+│
+├── static/
+│
+├── manage.py
+├── requirements.txt
+└── README.md
+```
 
-### Render Configuration Settings:
-*   **Environment / Language:** `Python`
-*   **Branch:** `main` (or your active Git branch)
-*   **Build Command:** 
-    ```bash
-    chmod +x build.sh && ./build.sh
-    ```
-*   **Start Command:**
-    ```bash
-    gunicorn assignment_portal.wsgi:application
-    ```
-*   **Instance Plan:** `Free`
+---
+
+## ⚙️ Installation
+
+### Clone the repository
+
+```bash
+git clone https://github.com/Sanju30cp/Student-Assignment-Portal.git
+```
+
+Move into the project folder
+
+```bash
+cd Student-Assignment-Portal
+```
+
+Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+Activate the virtual environment
+
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Apply migrations
+
+```bash
+python manage.py migrate
+```
+
+Collect static files
+
+```bash
+python manage.py collectstatic
+```
+
+Run the development server
+
+```bash
+python manage.py runserver
+```
+
+Visit
+
+```
+http://127.0.0.1:8000/
+```
+
+---
+
+## 📸 Screenshots
+
+You can add screenshots here.
+
+### Home Page
+
+```
+screenshots/home.png
+```
+
+### Faculty Dashboard
+
+```
+screenshots/faculty-dashboard.png
+```
+
+### Student Dashboard
+
+```
+screenshots/student-dashboard.png
+```
+
+### Assignment Submission
+
+```
+screenshots/submission.png
+```
+
+---
+
+## 📦 Requirements
+
+- Python 3.10+
+- Django 5.x
+- SQLite3
+
+---
+
+## 👨‍💻 Author
+
+**Sanju**
+
+GitHub:
+https://github.com/Sanju30cp
+
+---
+
+## Future Improvements
+
+- Email Notifications
+- Assignment Deadlines
+- File Upload Validation
+- PDF Report Generation
+- Admin Analytics Dashboard
+- PostgreSQL Support
+- Docker Deployment
+- REST API Integration
+
+---
+
+## License
+
+This project is developed for educational purposes.
