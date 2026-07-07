@@ -159,33 +159,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 📸 Screenshots
 
-You can add screenshots here.
-
-### Home Page
-
-```
-screenshots/home.png
-```
-
-### Faculty Dashboard
-
-```
-screenshots/faculty-dashboard.png
-```
-
-### Student Dashboard
-
-```
-screenshots/student-dashboard.png
-```
-
-### Assignment Submission
-
-```
-screenshots/submission.png
-```
 
 ---
 
